@@ -1,7 +1,7 @@
 CC = gcc
-CPPFLAGS = -Isrc
-CFLAGS = -Wall -Wextra -Werror -std=c99 -pedantic -g
-LDFLAGS =
+CPPFLAGS = -MMD -Isrc
+CFLAGS = -Wall -Wextra -Werror -std=c99 -pedantic -g -fsanitize=address
+LDFLAGS = -fsanitize=address
 LDLIBS =
 
 VPATH = src
@@ -11,6 +11,7 @@ TEST_BIN = unit_test_minimake
 
 SRC = minimake.c
 OBJ = ${SRC:.c=.o}
+DEP = ${SRC:.c=.d}
 
 TEST_SRC =
 TEST_OBJ = ${TEST_SRC:.c=.o}
@@ -24,8 +25,12 @@ ${BIN}: ${OBJ}
 ${TEST_BIN}: ${TEST_OBJ}
 	${CC} ${LDFLAGS} $^ -lcriterion -o $@
 
-check:
+check: ${BIN}
 	@echo 'Launch test suite'
 
 clean:
-	${RM} ${BIN} ${TEST_BIN} ${OBJ} ${TEST_OBJ}
+	${RM} ${BIN} ${TEST_BIN} ${OBJ} ${TEST_OBJ} ${DEP}
+
+-include ${DEP}
+
+#END
