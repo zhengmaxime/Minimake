@@ -3,6 +3,14 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <err.h>
+
+struct minimake_opts
+{
+    char *filename;
+    int pretty_print;
+};
 
 void print_help()
 {
@@ -13,7 +21,7 @@ void print_help()
          "  -h: Print this message and exit.");
 }
 
-void parse_cmdline_opts(int argc, char **argv)
+void parse_cmdline_opts(struct minimake_opts *opts, int argc, char **argv)
 {
     int opt = 0;
 
@@ -24,6 +32,12 @@ void parse_cmdline_opts(int argc, char **argv)
         case 'h':
             print_help();
             exit(0);
+        case 'f':
+            opts->filename = optarg;
+            break;
+        case 'p':
+            opts->pretty_print = 1;
+            break;
         default:
             print_help();
             exit(2);
@@ -31,9 +45,44 @@ void parse_cmdline_opts(int argc, char **argv)
     }
 }
 
+FILE *get_filestream_or_exit(const char *filename)
+{
+    FILE *f = fopen(filename, "r");
+
+    if (!f)
+        err(2, "%s", filename);
+
+    return f;
+}
+
+FILE *get_makefile_stream(const char *filename)
+{
+    FILE *f = NULL;
+
+    if (filename)
+        f = get_filestream_or_exit(filename);
+    else
+    {
+        f = get_filestream_or_exit("makefile");
+        if (!f)
+            f = get_filestream_or_exit("Makefile");
+        if (!f)
+            errx(2, "no makefile found");
+    }
+
+    return f;
+}
+
 int main(int argc, char **argv, char **envp)
 {
-    parse_cmdline_opts(argc, argv);
+    struct minimake_opts opts = {0, 0};
+
+    parse_cmdline_opts(&opts, argc, argv);
+
+    FILE *f = get_makefile_stream(opts.filename);
+
     (void)envp;
+
+    fclose(f);
     return 0;
 }
