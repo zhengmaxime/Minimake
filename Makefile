@@ -26,7 +26,7 @@ ${TEST_BIN}: ${TEST_OBJ}
 	${CC} ${LDFLAGS} $^ -lcriterion -o $@
 
 check: ${BIN}
-	@echo 'Launch test suite'
+	./tests/check.sh
 
 clean:
 	${RM} ${BIN} ${TEST_BIN} ${OBJ} ${TEST_OBJ} ${DEP}
