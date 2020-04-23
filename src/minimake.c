@@ -92,6 +92,12 @@ void print_rules(struct vars_rules *vr)
     {
         struct rule *r = vec_get(vr->rules, i);
         printf("(%s):", r->name);
+        struct vec *deps = r->dependencies;
+        for (size_t j = 0; j < vec_size(deps); ++j)
+        {
+            char *dep = vec_get(deps, j);
+            printf(" [%s]", dep);
+        }
         puts("");
     }
 }
