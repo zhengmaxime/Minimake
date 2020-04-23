@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include <err.h>
 #include "vars_rules.h"
+#include "var_sub.h"
 
 #define UNK 0
 #define VARDEF 1
@@ -94,6 +95,13 @@ static int parse_rule(struct vars_rules *vr, char *line)
     char *sep = strchr(line, ':');
     if (!sep)
         return 0;
+
+    char *var_dollar = strchr(line, '$');
+    while (var_dollar)
+    {
+        line = substitute_var(vr, line, var_dollar);
+        var_dollar = strchr(line, '$');
+    }
 
     char *name = get_name(line);
 
