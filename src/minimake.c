@@ -75,13 +75,24 @@ FILE *get_makefile_stream(const char *filename)
     return f;
 }
 
-void print(struct vars_rules *vr)
+void print_variables(struct vars_rules *vr)
 {
     puts("# variables");
     for (size_t i = 0; i < vec_size(vr->variables); ++i)
     {
         struct variable *v = vec_get(vr->variables, i);
         printf("'%s' = '%s'\n", v->name, v->value);
+    }
+}
+
+void print_rules(struct vars_rules *vr)
+{
+    puts("# rules");
+    for (size_t i = 0; i < vec_size(vr->rules); ++i)
+    {
+        struct rule *r = vec_get(vr->rules, i);
+        printf("(%s):", r->name);
+        puts("");
     }
 }
 
@@ -99,7 +110,8 @@ int main(int argc, char **argv, char **envp)
 
     if (opts.pretty_print)
     {
-        print(vr);
+        print_variables(vr);
+        print_rules(vr);
     }
 
     vr_destroy(vr);
