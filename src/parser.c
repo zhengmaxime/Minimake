@@ -68,6 +68,22 @@ static int parse_vardef(struct vars_rules *vr, char *line)
     return 1;
 }
 
+static struct vec *parse_dependencies(char *line)
+{
+    struct vec *deps = vec_init(10);
+
+    line = skip_spaces(line);
+
+    char *dep = strtok(line, " \t\n");
+    while (dep)
+    {
+        vec_add(deps, strdup(dep));
+        dep = strtok(NULL, " \t\n");
+    }
+
+    return deps;
+}
+
 static int parse_rule(struct vars_rules *vr, char *line)
 {
     skip_comment(line);
@@ -77,7 +93,7 @@ static int parse_rule(struct vars_rules *vr, char *line)
 
     char *name = get_name(line);
 
-    struct vec *dependencies = vec_init(10);
+    struct vec *dependencies = parse_dependencies(sep + 1);
     struct vec *commands = vec_init(10);
     struct rule *r = rule_init(name, dependencies, commands);
     vr_add_rule(vr, r);
