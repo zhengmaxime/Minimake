@@ -99,6 +99,12 @@ void print_rules(struct vars_rules *vr)
             printf(" [%s]", dep);
         }
         puts("");
+        struct vec *cmds = r->commands;
+        for (size_t j = 0; j < vec_size(cmds); ++j)
+        {
+            char *cmd = vec_get(cmds, j);
+            printf("\t'%s'\n", cmd);
+        }
     }
 }
 
