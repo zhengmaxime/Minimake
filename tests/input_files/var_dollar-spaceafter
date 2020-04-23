@@ -1,0 +1,4 @@
+VAR=42
+
+all: $ x
+	echo The answer is 42

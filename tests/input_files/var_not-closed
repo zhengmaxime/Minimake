@@ -1,0 +1,4 @@
+VAR=42
+
+all: $(VAR
+	echo The answer is 42

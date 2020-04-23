@@ -1,0 +1,5 @@
+FOO = 42
+
+all:
+	echo The answer is $(FOO)
+	echo The answer is ${FOO}
