@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <err.h>
+#include "parser.h"
+#include "vars_rules.h"
 
 struct minimake_opts
 {
@@ -73,6 +75,16 @@ FILE *get_makefile_stream(const char *filename)
     return f;
 }
 
+void print(struct vars_rules *vr)
+{
+    puts("# variables");
+    for (size_t i = 0; i < vec_size(vr->variables); ++i)
+    {
+        struct variable *v = vec_get(vr->variables, i);
+        printf("'%s' = '%s'\n", v->name, v->value);
+    }
+}
+
 int main(int argc, char **argv, char **envp)
 {
     struct minimake_opts opts = {0, 0};
@@ -81,8 +93,16 @@ int main(int argc, char **argv, char **envp)
 
     FILE *f = get_makefile_stream(opts.filename);
 
+    struct vars_rules *vr = parse_file(f);
+
     (void)envp;
 
+    if (opts.pretty_print)
+    {
+        print(vr);
+    }
+
+    vr_destroy(vr);
     fclose(f);
     return 0;
 }
