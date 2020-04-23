@@ -32,7 +32,7 @@ static char *get_var_value(char *sep)
     return value;
 }
 
-static inline size_t get_var_name_len(char *ptr)
+static inline size_t get_name_len(char *ptr)
 {
     size_t name_len = 0;
     for (; ptr && *ptr != '=' && !isspace(*ptr) && *ptr != ':'; ++ptr)
@@ -44,42 +44,64 @@ static inline size_t get_var_name_len(char *ptr)
     return name_len;
 }
 
-static char *get_var_name(char *line)
+static char *get_name(char *line)
 {
     line = skip_spaces(line);
-    size_t name_len = get_var_name_len(line);
+    size_t name_len = get_name_len(line);
     char *name = calloc(1, name_len + 1);
     strncpy(name, line, name_len);
     return name;
 }
 
-static void parse_vardef(struct vars_rules *vr, char *line)
+static int parse_vardef(struct vars_rules *vr, char *line)
 {
     skip_comment(line);
     char *sep = strchr(line, '=');
     if (!sep)
-        return;
+        return 0;
 
     char *value = get_var_value(sep);
-    char *name = get_var_name(line);
+    char *name = get_name(line);
 
     struct variable *var = variable_init(name, value);
     vr_add_var(vr, var);
+    return 1;
+}
+
+static int parse_rule(struct vars_rules *vr, char *line)
+{
+    skip_comment(line);
+    char *sep = strchr(line, ':');
+    if (!sep)
+        return 0;
+
+    char *name = get_name(line);
+
+    struct vec *dependencies = vec_init(10);
+    struct vec *commands = vec_init(10);
+    struct rule *r = rule_init(name, dependencies, commands);
+    vr_add_rule(vr, r);
+    return 1;
 }
 
 struct vars_rules *parse_file(FILE *f)
 {
-    struct vars_rules *res = vr_init();
+    struct vars_rules *vr = vr_init();
 
     char *line = NULL;
     size_t len = 0;
     ssize_t nread;
 
+    int parsing_status;
+
     while ((nread = getline(&line, &len, f)) != -1)
     {
-        parse_vardef(res, line);
+        parsing_status = parse_vardef(vr, line);
+        if (parsing_status)
+            continue;
+        parsing_status = parse_rule(vr, line);
     }
     free(line);
 
-    return res;
+    return vr;
 }
