@@ -68,6 +68,9 @@ char *substitute_var(struct vars_rules *vr, char *line, char *var_dollar)
     strncat(dest, line, var_dollar - line);
     strncat(dest, var_value, strlen(var_value));
     strcat(dest, var_end);
-    free(line);
+
+    free(var_name);
+    free(var_value);
+
     return dest;
 }
