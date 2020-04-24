@@ -8,6 +8,8 @@
 #include "vars_rules.h"
 #include "var_sub.h"
 
+static void build_target(struct vars_rules *vr, char *target);
+
 static int is_target_built(struct vec *built_targets, char *arg)
 {
     for (size_t i = 0; i < vec_size(built_targets); ++i)
@@ -30,12 +32,21 @@ static struct rule *find_rule(struct vars_rules *vr, char *arg)
     errx(2, " *** No rule to make target '%s'. Stop.", arg);
 }
 
-void build_target(struct vars_rules *vr, struct rule *r)
+static void build_deps(struct vars_rules *vr, struct vec *deps)
 {
-    struct vec *commands = r->commands;
-    for (size_t i = 0; i < vec_size(commands); ++i)
+    for (size_t i = 0; i < vec_size(deps); ++i)
     {
-        char *cmd = vec_get(commands, i);
+        char *dep = vec_get(deps, i);
+        build_target(vr, dep);
+    }
+}
+
+static void build_rule(struct vars_rules *vr, struct rule *r)
+{
+    build_deps(vr, r->dependencies);
+    for (size_t i = 0; i < vec_size(r->commands); ++i)
+    {
+        char *cmd = vec_get(r->commands, i);
         int new = 0;
         cmd = substitute_vars(vr, cmd, &new);
         log_command(cmd);
@@ -43,7 +54,18 @@ void build_target(struct vars_rules *vr, struct rule *r)
         if (new)
             free(cmd);
     }
-    return;
+}
+
+static void build_target(struct vars_rules *vr, char *target)
+{
+    if (is_target_built(vr->built_targets, target))
+    {
+        warnx("'%s' is up to date.", target);
+        return;
+    }
+    struct rule *r = find_rule(vr, target);
+    build_rule(vr, r);
+    vec_add(vr->built_targets, target);
 }
 
 static void build_first_standard_target(struct vars_rules *vr)
@@ -53,22 +75,11 @@ static void build_first_standard_target(struct vars_rules *vr)
         struct rule *r = vec_get(vr->rules, i);
         if (!strchr(r->name, '%'))
         {
-            build_target(vr, r);
+            build_rule(vr, r);
             return;
         }
     }
     errx(2, " *** No targets. Stop.");
-}
-
-static int is_target_built(struct vec *built_targets, char *arg)
-{
-    for (size_t i = 0; i < vec_size(built_targets); ++i)
-    {
-        char *target_name = vec_get(built_targets, i);
-        if (!strcmp(target_name, arg))
-            return 1;
-    }
-    return 0;
 }
 
 void build_targets(struct vars_rules *vr, int optind, int argc, char **argv)
@@ -79,18 +90,9 @@ void build_targets(struct vars_rules *vr, int optind, int argc, char **argv)
     }
     else
     {
-        struct vec *built_targets = vec_init(10);
         for (int i = optind; i < argc; ++i)
         {
-            if (is_target_built(built_targets, argv[i]))
-            {
-                warnx("'%s' is up to date.", argv[i]);
-                continue;
-            }
-            struct rule *r = find_rule(vr, argv[i]);
-            build_target(vr, r);
-            vec_add(built_targets, argv[i]);
+            build_target(vr, argv[i]);
         }
-        vec_destroy(built_targets);
     }
 }

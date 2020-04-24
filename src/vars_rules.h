@@ -19,6 +19,7 @@ struct vars_rules
 {
     struct vec *variables;
     struct vec *rules;
+    struct vec *built_targets;
 };
 
 struct variable *variable_init(char *name, char *value);

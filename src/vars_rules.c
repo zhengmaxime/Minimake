@@ -63,6 +63,7 @@ struct vars_rules *vr_init()
     struct vars_rules *vr = malloc(sizeof (*vr));
     vr->variables = vec_init(10);
     vr->rules = vec_init(10);
+    vr->built_targets = vec_init(10);
     return vr;
 }
 
@@ -96,5 +97,6 @@ void vr_destroy(struct vars_rules *vr)
 
     vec_destroy(vr->variables);
     vec_destroy(vr->rules);
+    vec_destroy(vr->built_targets);
     free(vr);
 }
