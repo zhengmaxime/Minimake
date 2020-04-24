@@ -1,0 +1,2 @@
+-f tests/input_files/targeted_file_exists
+minimake: 'tests/input_files/file' is up to date.

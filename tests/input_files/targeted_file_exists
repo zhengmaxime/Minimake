@@ -1,0 +1,2 @@
+tests/input_files/file:
+	echo toto
