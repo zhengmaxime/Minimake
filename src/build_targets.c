@@ -8,7 +8,8 @@
 #include "vars_rules.h"
 #include "var_sub.h"
 
-static void build_target(struct vars_rules *vr, char *target);
+static void build_target(struct vars_rules *vr, char *target,
+        int warn_uptodate);
 
 static int is_target_built(struct vec *built_targets, char *arg)
 {
@@ -34,10 +35,11 @@ static struct rule *find_rule(struct vars_rules *vr, char *arg)
 
 static void build_deps(struct vars_rules *vr, struct vec *deps)
 {
+    int warn_uptodate = 0;
     for (size_t i = 0; i < vec_size(deps); ++i)
     {
         char *dep = vec_get(deps, i);
-        build_target(vr, dep);
+        build_target(vr, dep, warn_uptodate);
     }
 }
 
@@ -56,11 +58,12 @@ static void build_rule(struct vars_rules *vr, struct rule *r)
     }
 }
 
-static void build_target(struct vars_rules *vr, char *target)
+static void build_target(struct vars_rules *vr, char *target, int warn_uptodate)
 {
     if (is_target_built(vr->built_targets, target))
     {
-        warnx("'%s' is up to date.", target);
+        if (warn_uptodate)
+            warnx("'%s' is up to date.", target);
         return;
     }
     struct rule *r = find_rule(vr, target);
@@ -90,9 +93,10 @@ void build_targets(struct vars_rules *vr, int optind, int argc, char **argv)
     }
     else
     {
+        int warn_uptodate = 1;
         for (int i = optind; i < argc; ++i)
         {
-            build_target(vr, argv[i]);
+            build_target(vr, argv[i], warn_uptodate);
         }
     }
 }
