@@ -1,3 +1,4 @@
+#include <sys/stat.h>
 #include <err.h>
 #include <string.h>
 #include <stdlib.h>
@@ -61,7 +62,9 @@ static void build_rule(struct vars_rules *vr, struct rule *r)
 
 static void build_target(struct vars_rules *vr, char *target, int warn_uptodate)
 {
-    if (is_target_built(vr->built_targets, target))
+    struct stat statbuf;
+    if ((stat(target, &statbuf) == 0) // file exists
+        || (is_target_built(vr->built_targets, target)))
     {
         if (warn_uptodate)
             printf("minimake: '%s' is up to date.\n", target);
@@ -79,6 +82,12 @@ static void build_first_standard_target(struct vars_rules *vr)
         struct rule *r = vec_get(vr->rules, i);
         if (!strchr(r->name, '%'))
         {
+            struct stat statbuf;
+            if ((stat(r->name, &statbuf) == 0)) // file exists
+            {
+                printf("minimake: '%s' is up to date.\n", r->name);
+                return;
+            }
             build_rule(vr, r);
             return;
         }
