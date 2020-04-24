@@ -7,6 +7,7 @@
 #include <err.h>
 #include "parser.h"
 #include "vars_rules.h"
+#include "build_targets.h"
 
 struct minimake_opts
 {
@@ -108,6 +109,12 @@ void print_rules(struct vars_rules *vr)
     }
 }
 
+void print(struct vars_rules *vr)
+{
+    print_variables(vr);
+    print_rules(vr);
+}
+
 int main(int argc, char **argv, char **envp)
 {
     struct minimake_opts opts = {0, 0};
@@ -121,10 +128,9 @@ int main(int argc, char **argv, char **envp)
     (void)envp;
 
     if (opts.pretty_print)
-    {
-        print_variables(vr);
-        print_rules(vr);
-    }
+        print(vr);
+    else
+        build_targets(vr, optind, argc, argv);
 
     vr_destroy(vr);
     fclose(f);
