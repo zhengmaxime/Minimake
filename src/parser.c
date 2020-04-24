@@ -112,6 +112,7 @@ static int parse_rule(struct vars_rules *vr, char *line)
     else
         free(old_line); // dup for nothing...
 
+    sep = strchr(line, ':');
     char *name = get_name(line);
 
     struct vec *dependencies = parse_dependencies(sep + 1);
