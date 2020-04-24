@@ -1,0 +1,4 @@
+all:
+	A=42
+	echo "doesn't work: -$$A-"
+	A=42; echo "does work: -$$A-"
