@@ -5,15 +5,25 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include <err.h>
 #include "exec_command.h"
+
+static inline char *skip_spaces_and_log(char *line)
+{
+    while (line && isspace(*line))
+        ++line;
+    if (line[0] == '@')
+        ++line;
+    return line;
+}
 
 static char **build_args(char *command)
 {
     char **args = calloc(4, sizeof (char *));
     args[0] = "/bin/sh";
     args[1] = "-c";
-    args[2] = command;
+    args[2] = skip_spaces_and_log(command);
     args[3] = NULL;
     return args;
 }

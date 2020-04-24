@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "build_targets.h"
 #include "exec_command.h"
+#include "log_command.h"
 #include "vector.h"
 #include "vars_rules.h"
 #include "var_sub.h"
@@ -38,6 +39,7 @@ void build_target(struct vars_rules *vr, struct rule *r)
         char *cmd = vec_get(commands, i);
         int new = 0;
         cmd = substitute_vars(vr, cmd, &new);
+        log_command(cmd);
         exec_command(cmd);
         if (new)
             free(cmd);

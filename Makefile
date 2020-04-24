@@ -9,7 +9,7 @@ VPATH = src
 BIN = minimake
 TEST_BIN = unit_test_minimake
 
-SRC = minimake.c vector.c parser.c vars_rules.c var_sub.c build_targets.c exec_command.c
+SRC = minimake.c vector.c parser.c vars_rules.c var_sub.c build_targets.c exec_command.c log_command.c
 OBJ = ${SRC:.c=.o}
 DEP = ${SRC:.c=.d}
 
