@@ -1,6 +1,7 @@
 #include <err.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include "build_targets.h"
 #include "exec_command.h"
 #include "log_command.h"
@@ -63,7 +64,7 @@ static void build_target(struct vars_rules *vr, char *target, int warn_uptodate)
     if (is_target_built(vr->built_targets, target))
     {
         if (warn_uptodate)
-            warnx("'%s' is up to date.", target);
+            printf("minimake: '%s' is up to date.\n", target);
         return;
     }
     struct rule *r = find_rule(vr, target);
