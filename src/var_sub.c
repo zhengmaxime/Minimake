@@ -67,7 +67,7 @@ static char *substitute_var(struct vars_rules *vr, char *line, char *var_dollar)
     char *dest = calloc(1, strlen(line) + strlen(var_value) + 1);
     strncat(dest, line, var_dollar - line);
     strncat(dest, var_value, strlen(var_value));
-    strcat(dest, 1 + var_closing_bracket);
+    strncat(dest, 1 + var_closing_bracket, strlen(var_closing_bracket));
 
     free(var_name);
     free(var_value);
