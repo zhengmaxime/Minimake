@@ -1,9 +1,11 @@
 #include <err.h>
+#include <string.h>
+#include <stdlib.h>
 #include "build_targets.h"
 #include "exec_command.h"
-#include "string.h"
 #include "vector.h"
 #include "vars_rules.h"
+#include "var_sub.h"
 
 static int is_target_built(struct vec *built_targets, char *arg)
 {
@@ -34,7 +36,11 @@ void build_target(struct vars_rules *vr, struct rule *r)
     for (size_t i = 0; i < vec_size(commands); ++i)
     {
         char *cmd = vec_get(commands, i);
+        int new = 0;
+        cmd = substitute_vars(vr, cmd, &new);
         exec_command(cmd);
+        if (new)
+            free(cmd);
     }
     return;
 }
