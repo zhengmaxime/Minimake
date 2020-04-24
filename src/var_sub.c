@@ -57,7 +57,7 @@ static char *get_var_value(struct vars_rules *vr, char *var_name)
     return empty_string;
 }
 
-char *substitute_var(struct vars_rules *vr, char *line, char *var_dollar)
+static char *substitute_var(struct vars_rules *vr, char *line, char *var_dollar)
 {
     char *var_closing_bracket = NULL;
     char *var_name = get_var_name(var_dollar, &var_closing_bracket);
@@ -73,4 +73,28 @@ char *substitute_var(struct vars_rules *vr, char *line, char *var_dollar)
     free(var_value);
 
     return dest;
+}
+
+char *substitute_vars(struct vars_rules *vr, char *line, int *new)
+{
+    char *old_line = strdup(line); // line is freed in parse_file
+    char *new_line = NULL;
+
+    char *var_dollar = strchr(old_line, '$');
+    while (var_dollar)
+    {
+        new_line = substitute_var(vr, old_line, var_dollar);
+        free(old_line);
+        var_dollar = strchr(new_line, '$');
+        old_line = new_line;
+    }
+    if (new_line)
+    {
+        *new = 1;
+        line = new_line;
+    }
+    else
+        free(old_line); // dup for nothing...
+
+    return line;
 }

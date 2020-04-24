@@ -96,22 +96,8 @@ static int parse_rule(struct vars_rules *vr, char *line)
     if (!sep)
         return 0;
 
-    char *old_line = strdup(line); // line is freed by the caller function
-    char *new_line = NULL;
-
-    char *var_dollar = strchr(old_line, '$');
-    while (var_dollar)
-    {
-        new_line = substitute_var(vr, old_line, var_dollar);
-        free(old_line);
-        var_dollar = strchr(new_line, '$');
-        old_line = new_line;
-    }
-    if (new_line)
-        line = new_line;
-    else
-        free(old_line); // dup for nothing...
-
+    int new = 0;
+    line = substitute_vars(vr, line, &new);
     sep = strchr(line, ':');
     char *name = get_name(line);
 
@@ -120,7 +106,8 @@ static int parse_rule(struct vars_rules *vr, char *line)
     struct rule *r = rule_init(name, dependencies, commands);
     vr_add_rule(vr, r);
 
-    free(new_line);
+    if (new)
+        free(line);
 
     return RULE;
 }
