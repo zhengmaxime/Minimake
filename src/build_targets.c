@@ -60,6 +60,17 @@ static void build_first_standard_target(struct vars_rules *vr)
     errx(2, " *** No targets. Stop.");
 }
 
+static int is_target_built(struct vec *built_targets, char *arg)
+{
+    for (size_t i = 0; i < vec_size(built_targets); ++i)
+    {
+        char *target_name = vec_get(built_targets, i);
+        if (!strcmp(target_name, arg))
+            return 1;
+    }
+    return 0;
+}
+
 void build_targets(struct vars_rules *vr, int optind, int argc, char **argv)
 {
     if (optind == argc) // no rule given
@@ -68,10 +79,18 @@ void build_targets(struct vars_rules *vr, int optind, int argc, char **argv)
     }
     else
     {
+        struct vec *built_targets = vec_init(10);
         for (int i = optind; i < argc; ++i)
         {
+            if (is_target_built(built_targets, argv[i]))
+            {
+                warnx("'%s' is up to date.", argv[i]);
+                continue;
+            }
             struct rule *r = find_rule(vr, argv[i]);
             build_target(vr, r);
+            vec_add(built_targets, argv[i]);
         }
+        vec_destroy(built_targets);
     }
 }
