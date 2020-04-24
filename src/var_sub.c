@@ -43,13 +43,13 @@ static char *get_var_name(char *dollar, char **end)
 static char *get_var_value(struct vars_rules *vr, char *var_name)
 {
     if (!strcmp(var_name, "$"))
-        return var_name;
+        return strdup(var_name);
 
     for (size_t i = 0; i < vec_size(vr->variables); ++i)
     {
         struct variable *v = vec_get(vr->variables, i);
         if (!strcmp(v->name, var_name))
-            return v->value;
+            return strdup(v->value);
         // FIMXE: rec var
     }
 
