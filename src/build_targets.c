@@ -1,5 +1,6 @@
 #include <err.h>
 #include "build_targets.h"
+#include "exec_command.h"
 #include "string.h"
 #include "vector.h"
 #include "vars_rules.h"
@@ -29,7 +30,12 @@ static struct rule *find_rule(struct vars_rules *vr, char *arg)
 void build_target(struct vars_rules *vr, struct rule *r)
 {
     (void)vr;
-    (void)r;
+    struct vec *commands = r->commands;
+    for (size_t i = 0; i < vec_size(commands); ++i)
+    {
+        char *cmd = vec_get(commands, i);
+        exec_command(cmd);
+    }
     return;
 }
 
