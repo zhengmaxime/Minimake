@@ -1,0 +1,1 @@
+all check -f tests/input_files/targets

@@ -4,6 +4,17 @@
 #include "vector.h"
 #include "vars_rules.h"
 
+static int is_target_built(struct vec *built_targets, char *arg)
+{
+    for (size_t i = 0; i < vec_size(built_targets); ++i)
+    {
+        char *target_name = vec_get(built_targets, i);
+        if (!strcmp(target_name, arg))
+            return 1;
+    }
+    return 0;
+}
+
 static struct rule *find_rule(struct vars_rules *vr, char *arg)
 {
     for (size_t i = 0; i < vec_size(vr->rules); ++i)
