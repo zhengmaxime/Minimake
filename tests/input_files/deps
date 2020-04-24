@@ -1,0 +1,10 @@
+all: before before nolog norecipe
+	echo all
+
+before:
+	echo before
+
+nolog:
+	@echo nolog
+
+norecipe:

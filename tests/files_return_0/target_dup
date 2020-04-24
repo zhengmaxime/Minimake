@@ -1,0 +1,8 @@
+-f tests/input_files/deps all before before
+echo before
+before
+nolog
+echo all
+all
+minimake: 'before' is up to date.
+minimake: 'before' is up to date.

@@ -1,0 +1,6 @@
+-f tests/input_files/deps
+echo before
+before
+nolog
+echo all
+all
