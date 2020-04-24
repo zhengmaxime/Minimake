@@ -18,10 +18,6 @@ static inline char get_closing_bracket(char open)
 
 static char *get_var_name(char *dollar, char **end)
 {
-    if (!dollar[1] || isspace(dollar[1])
-        || dollar[1] == ':' || dollar[1] == ':')
-        errx(2, "$ with bad character after");
-
     char *var_name = NULL;
 
     char *ptr = dollar + 1;
@@ -32,11 +28,15 @@ static char *get_var_name(char *dollar, char **end)
         return var_name;
     }
 
+    if (isspace(dollar[1]) || dollar[1] == ':')
+        errx(2, "$ with bad character after");
+
     char closing = get_closing_bracket(*ptr);
-    *end = strchr(ptr + 1, closing);
+    *end = strchr(ptr, closing);
     if (*end == NULL)
         errx(2, "var not closed");
-    var_name = strndup(ptr + 1, *end - (ptr + 1));
+    *end = *end + 1;
+    var_name = strndup(ptr + 1, (*end - 2) - ptr);
     return var_name;
 }
 
@@ -57,17 +57,18 @@ static char *get_var_value(struct vars_rules *vr, char *var_name)
     return empty_string;
 }
 
-static char *substitute_var(struct vars_rules *vr, char *line, char *var_dollar)
+static char *substitute_var(struct vars_rules *vr, char *line, char *var_dollar, char **next)
 {
-    char *var_closing_bracket = NULL;
-    char *var_name = get_var_name(var_dollar, &var_closing_bracket);
+    char *var_after = NULL;
+    char *var_name = get_var_name(var_dollar, &var_after);
     char *var_value = get_var_value(vr, var_name);
 
     // allocate a new line, big enough
     char *dest = calloc(1, strlen(line) + strlen(var_value) + 1);
     strncat(dest, line, var_dollar - line);
     strncat(dest, var_value, strlen(var_value));
-    strncat(dest, 1 + var_closing_bracket, strlen(var_closing_bracket));
+    strncat(dest, var_after, strlen(var_after));
+    *next = dest + (var_dollar - line) + strlen(var_value) + 1;
 
     free(var_name);
     free(var_value);
@@ -83,9 +84,10 @@ char *substitute_vars(struct vars_rules *vr, char *line, int *new)
     char *var_dollar = strchr(old_line, '$');
     while (var_dollar)
     {
-        new_line = substitute_var(vr, old_line, var_dollar);
+        char *next = NULL;
+        new_line = substitute_var(vr, old_line, var_dollar, &next);
         free(old_line);
-        var_dollar = strchr(new_line, '$');
+        var_dollar = strchr(next, '$');
         old_line = new_line;
     }
     if (new_line)
