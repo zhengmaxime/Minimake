@@ -32,7 +32,6 @@ static struct rule *find_rule(struct vars_rules *vr, char *arg)
 
 void build_target(struct vars_rules *vr, struct rule *r)
 {
-    (void)vr;
     struct vec *commands = r->commands;
     for (size_t i = 0; i < vec_size(commands); ++i)
     {
@@ -47,17 +46,25 @@ void build_target(struct vars_rules *vr, struct rule *r)
     return;
 }
 
+static void build_first_standard_target(struct vars_rules *vr)
+{
+    for (size_t i = 0; i < vec_size(vr->rules); ++i)
+    {
+        struct rule *r = vec_get(vr->rules, i);
+        if (!strchr(r->name, '%'))
+        {
+            build_target(vr, r);
+            return;
+        }
+    }
+    errx(2, " *** No targets. Stop.");
+}
+
 void build_targets(struct vars_rules *vr, int optind, int argc, char **argv)
 {
     if (optind == argc) // no rule given
     {
-        if (vec_size(vr->rules) > 0)
-        {
-            struct rule *r = vec_get(vr->rules, 0);
-            build_target(vr, r);
-        }
-        else
-            errx(2, " *** No targets. Stop.");
+        build_first_standard_target(vr);
     }
     else
     {
