@@ -66,9 +66,9 @@ FILE *get_makefile_stream(const char *filename)
         f = get_filestream_or_exit(filename);
     else
     {
-        f = get_filestream_or_exit("makefile");
+        f = fopen("makefile", "r");
         if (!f)
-            f = get_filestream_or_exit("Makefile");
+            f = fopen("Makefile", "r");
         if (!f)
             errx(2, "no makefile found");
     }
