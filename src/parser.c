@@ -49,12 +49,19 @@ static size_t get_name_len(char *ptr)
     return name_len;
 }
 
-static char *get_name(char *line)
+static char *get_name(struct vars_rules *vr, char *line)
 {
     line = skip_spaces(line);
     size_t name_len = get_name_len(line);
     char *name = calloc(1, name_len + 1);
     strncpy(name, line, name_len);
+    int new = 0;
+    char *new_name = substitute_vars(vr, name, &new);
+    if (new)
+    {
+        free(name);
+        name = new_name;
+    }
     return name;
 }
 
@@ -66,7 +73,7 @@ static int parse_vardef(struct vars_rules *vr, char *line)
         return 0;
 
     char *value = get_value(sep + 1);
-    char *name = get_name(line);
+    char *name = get_name(vr, line);
 
     struct variable *var = variable_init(name, value);
     vr_add_var(vr, var);
@@ -99,7 +106,7 @@ static int parse_rule(struct vars_rules *vr, char *line)
     int new = 0;
     line = substitute_vars(vr, line, &new);
     sep = strchr(line, ':');
-    char *name = get_name(line);
+    char *name = get_name(vr, line);
 
     struct vec *dependencies = parse_dependencies(sep + 1);
     struct vec *commands = vec_init(10);
