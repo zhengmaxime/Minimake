@@ -1,0 +1,10 @@
+all: minimake
+
+minimake:
+	gcc src/*.c -o minimake
+
+check: minimake
+	./tests/check.sh
+
+clean:
+	rm -rf minimake *.o

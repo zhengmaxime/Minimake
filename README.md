@@ -24,4 +24,5 @@ make check
 ### Additional features:
 
 * Makefile selection
+* Self building project
 * Comments
