@@ -13,10 +13,12 @@
 
 #define UP_TO_DATE 1
 #define NOTIF_UP_TO_DATE 1
+#define CALLED_FROM_CMDLINE 1
 
-static void build_target(struct vars_rules *vr,
-                         char *target,
-                         int warn_uptodate);
+static int build_target(struct vars_rules *vr,
+                        char *target,
+                        int warn_uptodate,
+                        int called_from_cmdline);
 
 static int is_target_built(struct vec *built_targets, char *arg)
 {
@@ -51,7 +53,8 @@ static int dep_more_recent_than_file(struct stat *dep_statbuf,
 /* return true if one of the deps is more recent than the current file */
 static int build_deps(struct vars_rules *vr,
                       struct rule *r,
-                      struct stat *target_statbuf)
+                      struct stat *target_statbuf,
+                      int *nb_executed_cmd)
 {
     int more_recent = 0;
 
@@ -64,7 +67,8 @@ static int build_deps(struct vars_rules *vr,
             || !target_statbuf // target file doesn't exist
             || (dep_more_recent_than_file(&dep_statbuf, target_statbuf)))
         {
-            build_target(vr, dep, !NOTIF_UP_TO_DATE);
+            *nb_executed_cmd += build_target(vr, dep, !NOTIF_UP_TO_DATE,
+                                             !CALLED_FROM_CMDLINE);
             more_recent = 1;
             continue;
         }
@@ -76,7 +80,8 @@ static int build_deps(struct vars_rules *vr,
 /* return true if rule was up to date */
 static int build_rule(struct vars_rules *vr,
                       struct rule *r,
-                      char *target)
+                      char *target,
+                      int *nb_executed_cmd)
 {
     struct stat statbuf;
     int file_exists = (stat(target, &statbuf) == 0);
@@ -87,14 +92,14 @@ static int build_rule(struct vars_rules *vr,
             return UP_TO_DATE;
         else
         {
-            int is_more_recent = build_deps(vr, r, &statbuf);
+            int is_more_recent = build_deps(vr, r, &statbuf, nb_executed_cmd);
             if (!is_more_recent)
                 return UP_TO_DATE;
         }
     }
 
     if (!file_exists && (vec_size(r->dependencies) > 0))
-        build_deps(vr, r, NULL);
+        build_deps(vr, r, NULL, nb_executed_cmd);
 
     for (size_t i = 0; i < vec_size(r->commands); ++i)
     {
@@ -106,43 +111,59 @@ static int build_rule(struct vars_rules *vr,
         if (new)
             free(cmd);
     }
+    *nb_executed_cmd += vec_size(r->commands);
+
     return !UP_TO_DATE;
 }
 
-static void build_target(struct vars_rules *vr,
-                         char *target,
-                         int warn_uptodate)
+/* return nb of commands executed in deps and recipe */
+static int build_target(struct vars_rules *vr,
+                        char *target,
+                        int warn_uptodate,
+                        int called_from_cmdline)
 {
+    int nb_executed_cmd = 0;
+
     if (is_target_built(vr->built_targets, target))
     {
         if (warn_uptodate)
             printf("minimake: '%s' is up to date.\n", target);
-        return;
+        return nb_executed_cmd;
     }
-    struct rule *r = find_rule(vr, target);
 
-    int was_uptodate = build_rule(vr, r, target);
-    if (was_uptodate)
+    struct rule *r = find_rule(vr, target);
+    int was_uptodate = build_rule(vr, r, target, &nb_executed_cmd);
+
+    if (called_from_cmdline
+            && nb_executed_cmd == 0 && vec_size(r->commands) == 0)
+    {
+        printf("minimake: Nothing to be done for '%s'.\n", target);
+    }
+    else if (was_uptodate)
     {
         if (warn_uptodate)
             printf("minimake: '%s' is up to date.\n", target);
     }
+
     vec_add(vr->built_targets, target);
+
+    return nb_executed_cmd;
 }
 
 static void build_first_standard_target(struct vars_rules *vr)
 {
+    int nb_executed_cmd = 0;
     for (size_t i = 0; i < vec_size(vr->rules); ++i)
     {
         struct rule *r = vec_get(vr->rules, i);
         char *target = r->name;
         if (!strchr(target, '%'))
         {
-            int was_uptodate = build_rule(vr, r, target);
-            if (was_uptodate)
-            {
+            int was_uptodate = build_rule(vr, r, target, &nb_executed_cmd);
+            if (nb_executed_cmd == 0 && vec_size(r->commands) == 0)
+                printf("minimake: Nothing to be done for '%s'.\n", target);
+            else if (was_uptodate)
                 printf("minimake: '%s' is up to date.\n", target);
-            }
             return;
         }
     }
@@ -156,6 +177,6 @@ void build_targets(struct vars_rules *vr, int optind, int argc, char **argv)
     else
     {
         for (int i = optind; i < argc; ++i)
-            build_target(vr, argv[i], NOTIF_UP_TO_DATE);
+            build_target(vr, argv[i], NOTIF_UP_TO_DATE, CALLED_FROM_CMDLINE);
     }
 }
