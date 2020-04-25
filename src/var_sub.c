@@ -8,7 +8,7 @@
 
 static inline int is_single_character(char *var)
 {
-    return ((*var == '$') || (*var != '(' && *var != '{'));
+    return ((*var == '$') || (*var == '\n') || (*var != '(' && *var != '{'));
 }
 
 static inline char get_closing_bracket(char open)
@@ -24,6 +24,8 @@ static char *get_var_name(char *dollar, char **end)
     if (is_single_character(ptr))
     {
         *end = ptr + 1;
+        if (*ptr == '\n') // $\n=$
+            --ptr;
         var_name = strndup(ptr, 1);
         return var_name;
     }
