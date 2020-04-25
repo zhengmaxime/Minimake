@@ -1,0 +1,7 @@
+A=B
+BB=foo
+
+all: $(B$(A))
+
+foo:
+	@echo OK
