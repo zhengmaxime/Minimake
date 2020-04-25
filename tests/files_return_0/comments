@@ -1,0 +1,4 @@
+-f tests/input_files/comments
+echo a test  line # with a comment
+a test line
+# just a comment

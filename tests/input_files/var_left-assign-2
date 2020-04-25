@@ -1,0 +1,6 @@
+BIN=foo
+
+all: $(BIN)
+
+$(BIN):
+	@echo foo

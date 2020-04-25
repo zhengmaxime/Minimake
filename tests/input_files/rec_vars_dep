@@ -1,0 +1,10 @@
+FOO=$(BAR)
+
+all: $(BAR)
+	@echo The answer is $(FOO)
+
+BAR = check
+
+check:
+	@echo check
+

@@ -1,0 +1,6 @@
+FOO=BAR
+
+$(FOO)=42
+
+all:
+	@echo $(BAR)
