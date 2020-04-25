@@ -1,0 +1,3 @@
+all -f tests/input_files/nothing-to-be-done
+echo foo
+foo

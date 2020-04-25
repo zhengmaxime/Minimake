@@ -1,0 +1,2 @@
+-f tests/input_files/nothing-to-be-done-2
+minimake: Nothing to be done for 'bar'.

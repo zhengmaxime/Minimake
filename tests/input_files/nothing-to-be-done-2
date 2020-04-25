@@ -1,0 +1,7 @@
+bar: baz
+all: foo
+
+foo:
+	echo foo
+
+baz:
