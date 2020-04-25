@@ -30,7 +30,7 @@ void vec_add(struct vec *v, void *elt)
     if (v->size == v->capacity)
     {
         v->capacity *= 2;
-        v->data = realloc(v->data, v->capacity);
+        v->data = realloc(v->data, v->capacity * sizeof (void *));
         if (!v->data)
             return;
     }
