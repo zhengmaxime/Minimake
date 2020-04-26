@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+#include <unistd.h>
 #define _POSIX_C_SOURCE 200809L
 #include <ctype.h>
 #include <stdio.h>
@@ -80,6 +82,14 @@ static char *get_var_value(struct vars_rules *vr, char *var_name)
         struct variable *v = vec_get(vr->variables, i);
         if (!strcmp(v->name, var_name))
             return strdup(v->value);
+    }
+
+    extern char **environ;
+    for (size_t i = 0; environ[i]; ++i)
+    {
+        size_t len = strlen(var_name);
+        if (!strncmp(var_name, environ[i], len))
+            return strdup(environ[i] + len + 1);
     }
 
     char *empty_string = calloc(1, 1);

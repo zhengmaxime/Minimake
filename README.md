@@ -27,3 +27,4 @@ make check
 * Self building project
 * Comments
 * Recursive variables
+* Environment variables
