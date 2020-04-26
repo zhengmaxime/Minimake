@@ -5,18 +5,40 @@
 #include <string.h>
 #include <err.h>
 #include "vars_rules.h"
+#include "var_sub.h"
+#include "stack.h"
 
 static inline int is_single_character(char *var)
 {
     return ((*var == '$') || (*var == '\n') || (*var != '(' && *var != '{'));
 }
 
-static inline char get_closing_bracket(char open)
+static inline char *get_closing_bracket(char *ptr)
 {
-    return (open == '(') ? ')' : '}';
+    struct stack *st = NULL;
+
+    for (; *ptr; ++ptr)
+    {
+        char c = ptr[0];
+
+        if (ptr[-1] == '$' && (c == '(' || c == '{'))
+            st = stack_push(st, c);
+
+        else if (c == ')' || c == '}')
+        {
+            char top = stack_top(st);
+            if ((top == '(' && c == ')') || (top == '{' && c == '}'))
+                st = stack_pop(st);
+
+            if (st == NULL)
+                return ptr;
+        }
+    }
+
+    errx(2, "var not closed properly");
 }
 
-static char *get_var_name(char *dollar, char **end)
+static char *get_var_name(struct vars_rules *vr, char *dollar, char **end)
 {
     char *var_name = NULL;
 
@@ -33,12 +55,18 @@ static char *get_var_name(char *dollar, char **end)
     if (isspace(dollar[1]) || dollar[1] == ':')
         errx(2, "$ with bad character after");
 
-    char closing = get_closing_bracket(*ptr);
-    *end = strchr(ptr, closing);
+    *end = get_closing_bracket(ptr);
     if (*end == NULL)
         errx(2, "var not closed");
     *end = *end + 1;
     var_name = strndup(ptr + 1, (*end - 2) - ptr);
+    int new = 0;
+    char *new_var_name = substitute_vars(vr, var_name, &new);
+    if (new)
+    {
+        free(var_name);
+        var_name = new_var_name;
+    }
     return var_name;
 }
 
@@ -62,7 +90,7 @@ static char *get_var_value(struct vars_rules *vr, char *var_name)
 static char *substitute_var(struct vars_rules *vr, char *line, char *var_dollar, char **next)
 {
     char *var_after = NULL;
-    char *var_name = get_var_name(var_dollar, &var_after);
+    char *var_name = get_var_name(vr, var_dollar, &var_after);
     char *var_value = get_var_value(vr, var_name);
 
     // allocate a new line, big enough
