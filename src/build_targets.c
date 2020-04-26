@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <time.h>
 #include "build_targets.h"
+#include "find_rule.h"
 #include "exec_command.h"
 #include "log_command.h"
 #include "vector.h"
@@ -29,17 +30,6 @@ static int is_target_built(struct vec *built_targets, char *arg)
             return 1;
     }
     return 0;
-}
-
-static struct rule *find_rule(struct vars_rules *vr, char *arg)
-{
-    for (size_t i = 0; i < vec_size(vr->rules); ++i)
-    {
-        struct rule *r = vec_get(vr->rules, i);
-        if (!strcmp(r->name, arg))
-            return r;
-    }
-    errx(2, " *** No rule to make target '%s'. Stop.", arg);
 }
 
 static int dep_more_recent_than_file(struct stat *dep_statbuf,
@@ -90,7 +80,7 @@ static int build_rule(struct vars_rules *vr,
     struct stat statbuf;
     int file_exists = (stat(target, &statbuf) == 0);
 
-    if (file_exists)
+    if (!r->phony && file_exists)
     {
         if (vec_size(r->dependencies) == 0)
             return UP_TO_DATE;
@@ -102,7 +92,7 @@ static int build_rule(struct vars_rules *vr,
         }
     }
 
-    if (!file_exists && (vec_size(r->dependencies) > 0))
+    if ((r->phony || !file_exists) && (vec_size(r->dependencies) > 0))
         build_deps(vr, r, NULL, nb_executed_cmd);
 
     for (size_t i = 0; i < vec_size(r->commands); ++i)
@@ -128,14 +118,17 @@ static int build_target(struct vars_rules *vr,
 {
     int nb_executed_cmd = 0;
 
+    struct rule *r = find_rule(vr, target);
+
     if (is_target_built(vr->built_targets, target))
     {
-        if (warn_uptodate)
+        if (r->phony)
+            printf("minimake: Nothing to be done for '%s'.\n", target);
+        else if (warn_uptodate)
             printf("minimake: '%s' is up to date.\n", target);
         return nb_executed_cmd;
     }
 
-    struct rule *r = find_rule(vr, target);
     int was_uptodate = build_rule(vr, r, target, &nb_executed_cmd);
 
     if (called_from_cmdline

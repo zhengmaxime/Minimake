@@ -28,3 +28,4 @@ make check
 * Comments
 * Recursive variables
 * Environment variables
+* Phony targets

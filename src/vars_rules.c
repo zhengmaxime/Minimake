@@ -23,6 +23,7 @@ struct rule *rule_init(char *name, struct vec *dependencies, struct vec *command
     r->name = name;
     r->dependencies = dependencies;
     r->commands = commands;
+    r->phony = 0;
     return r;
 }
 

@@ -12,6 +12,7 @@ struct rule
     char *name;
     struct vec *dependencies;
     struct vec *commands;
+    int phony;
 };
 
 struct vars_rules

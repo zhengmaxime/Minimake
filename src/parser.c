@@ -6,6 +6,7 @@
 #include <err.h>
 #include "vars_rules.h"
 #include "var_sub.h"
+#include "find_rule.h"
 
 #define UNK 0
 #define VARDEF 1
@@ -115,6 +116,16 @@ static int parse_rule(struct vars_rules *vr, char *line)
 
     if (new)
         free(line);
+
+    if (!strcmp(".PHONY", name))
+    {
+        for (size_t i = 0; i < vec_size(dependencies); ++i)
+        {
+            char *dep = vec_get(dependencies, i);
+            struct rule *r = find_rule(vr, dep);
+            r->phony = 1;
+        }
+    }
 
     return RULE;
 }
