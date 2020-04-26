@@ -1,0 +1,4 @@
+clean:
+	@echo "cleaning stuff up"
+
+.PHONY: clean

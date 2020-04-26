@@ -1,0 +1,6 @@
+A=1
+FOO=$A
+A=2
+
+all:
+	@echo $(FOO)
