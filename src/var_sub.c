@@ -72,15 +72,14 @@ static char *get_var_name(struct vars_rules *vr, char *dollar, char **end)
 
 static char *get_var_value(struct vars_rules *vr, char *var_name)
 {
-    if (!strcmp(var_name, "$"))
-        return strdup(var_name);
+    if (!strcmp(var_name, "$")) // handle $$
+        return strdup("$");
 
     for (size_t i = 0; i < vec_size(vr->variables); ++i)
     {
         struct variable *v = vec_get(vr->variables, i);
         if (!strcmp(v->name, var_name))
             return strdup(v->value);
-        // FIMXE: rec var
     }
 
     char *empty_string = calloc(1, 1);
@@ -92,6 +91,17 @@ static char *substitute_var(struct vars_rules *vr, char *line, char *var_dollar,
     char *var_after = NULL;
     char *var_name = get_var_name(vr, var_dollar, &var_after);
     char *var_value = get_var_value(vr, var_name);
+
+    if (strcmp(var_value, "$")) // $ is $, no recursion there...
+    {
+        int new = 0;
+        char *new_var_value = substitute_vars(vr, var_value, &new);
+        if (new)
+        {
+            free(var_value);
+            var_value = new_var_value;
+        }
+    }
 
     // allocate a new line, big enough
     char *dest = calloc(1, strlen(line) + strlen(var_value) + 1);

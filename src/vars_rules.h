@@ -5,7 +5,6 @@ struct variable
 {
     char *name;
     char *value;
-    struct variable *rec_var;
 };
 
 struct rule
@@ -23,8 +22,6 @@ struct vars_rules
 };
 
 struct variable *variable_init(char *name, char *value);
-
-struct variable *variable_init_rec(char *name, struct variable *value);
 
 void variable_destroy(struct variable *v);
 

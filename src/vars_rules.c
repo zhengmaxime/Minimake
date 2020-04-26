@@ -7,16 +7,6 @@ struct variable *variable_init(char *name, char *value)
     struct variable *v = malloc(sizeof (*v));
     v->name = name;
     v->value = value;
-    v->rec_var = NULL;
-    return v;
-}
-
-struct variable *variable_init_rec(char *name, struct variable *value)
-{
-    struct variable *v = malloc(sizeof (*v));
-    v->name = name;
-    v->rec_var = value;
-    v->value = NULL;
     return v;
 }
 

@@ -26,3 +26,4 @@ make check
 * Makefile selection
 * Self building project
 * Comments
+* Recursive variables
