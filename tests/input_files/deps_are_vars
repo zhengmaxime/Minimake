@@ -1,0 +1,11 @@
+AA=foo
+BB=bar
+
+foo:
+	@echo foo
+
+bar:
+	@echo bar
+
+all: $(AA) $(BB)
+	@echo OK

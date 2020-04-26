@@ -1,0 +1,4 @@
+-f tests/input_files/deps_are_vars all
+foo
+bar
+OK
