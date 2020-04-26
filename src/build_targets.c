@@ -53,9 +53,13 @@ static int dep_more_recent_than_file(struct stat *dep_statbuf,
 /* return true if one of the deps is more recent than the current file */
 static int build_deps(struct vars_rules *vr,
                       struct rule *r,
-                      struct stat *target_statbuf,
+                      char *target,
                       int *nb_executed_cmd)
 {
+    struct stat target_statbuf;
+    if (target)
+        stat(target, &target_statbuf);
+
     int more_recent = 0;
 
     for (size_t i = 0; i < vec_size(r->dependencies); ++i)
@@ -64,8 +68,8 @@ static int build_deps(struct vars_rules *vr,
         struct stat dep_statbuf;
 
         if ((stat(dep, &dep_statbuf) != 0) // dep file doesn't exist
-            || !target_statbuf // target file doesn't exist
-            || (dep_more_recent_than_file(&dep_statbuf, target_statbuf)))
+            || !target // target file doesn't exist
+            || (dep_more_recent_than_file(&dep_statbuf, &target_statbuf)))
         {
             *nb_executed_cmd += build_target(vr, dep, !NOTIF_UP_TO_DATE,
                                              !CALLED_FROM_CMDLINE);
@@ -92,7 +96,7 @@ static int build_rule(struct vars_rules *vr,
             return UP_TO_DATE;
         else
         {
-            int is_more_recent = build_deps(vr, r, &statbuf, nb_executed_cmd);
+            int is_more_recent = build_deps(vr, r, target, nb_executed_cmd);
             if (!is_more_recent)
                 return UP_TO_DATE;
         }
