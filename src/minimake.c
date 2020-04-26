@@ -115,17 +115,12 @@ void print(struct vars_rules *vr)
     print_rules(vr);
 }
 
-int main(int argc, char **argv, char **envp)
+int main(int argc, char **argv)
 {
     struct minimake_opts opts = {0, 0};
-
     parse_cmdline_opts(&opts, argc, argv);
-
     FILE *f = get_makefile_stream(opts.filename);
-
     struct vars_rules *vr = parse_file(f);
-
-    (void)envp;
 
     if (opts.pretty_print)
         print(vr);

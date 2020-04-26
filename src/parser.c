@@ -132,7 +132,7 @@ static int parse_rule(struct vars_rules *vr, char *line)
 
 static int check_blank_line(char *line)
 {
-    for (; line; ++line)
+    for (; line && *line; ++line)
     {
         if (!isspace(*line))
             return 0;

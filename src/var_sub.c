@@ -96,7 +96,10 @@ static char *get_var_value(struct vars_rules *vr, char *var_name)
     return empty_string;
 }
 
-static char *substitute_var(struct vars_rules *vr, char *line, char *var_dollar, char **next)
+static char *substitute_var(struct vars_rules *vr,
+                            char *line,
+                            char *var_dollar,
+                            char **next)
 {
     char *var_after = NULL;
     char *var_name = get_var_name(vr, var_dollar, &var_after);

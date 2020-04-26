@@ -15,6 +15,11 @@ static inline char *skip_spaces_and_log(char *line)
         ++line;
     if (line[0] == '@')
         ++line;
+    else
+    {
+        puts(line);
+        fflush(NULL);
+    }
     return line;
 }
 
@@ -28,7 +33,7 @@ static char **build_args(char *command)
     return args;
 }
 
-void exec_command(char *command)
+void exec_command_and_log(char *command)
 {
     char **args = build_args(command);
     pid_t pid = fork();

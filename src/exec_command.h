@@ -1,3 +1,3 @@
 #pragma once
 
-void exec_command(char *command);
+void exec_command_and_log(char *command);

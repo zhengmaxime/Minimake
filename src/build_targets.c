@@ -7,7 +7,6 @@
 #include "build_targets.h"
 #include "find_rule.h"
 #include "exec_command.h"
-#include "log_command.h"
 #include "vector.h"
 #include "vars_rules.h"
 #include "var_sub.h"
@@ -100,8 +99,7 @@ static int build_rule(struct vars_rules *vr,
         char *cmd = vec_get(r->commands, i);
         int new = 0;
         cmd = substitute_vars(vr, cmd, &new);
-        log_command(cmd);
-        exec_command(cmd);
+        exec_command_and_log(cmd);
         if (new)
             free(cmd);
     }
